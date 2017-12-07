@@ -1,4 +1,4 @@
-# BFGS-Optimization-for-curve-fitting
+# BFGS-Optimization-for-curve-fitting C++
 use BFGS optimization algorithm to solve problems like curve fitting
 the codes contain two part: a BFGS optimizer and some curve fitting example
 I also uploaded a code file which have veryfied these codes.
