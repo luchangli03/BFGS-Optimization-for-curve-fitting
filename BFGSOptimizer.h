@@ -73,7 +73,7 @@ public:
 		}
 	}
 
-	void BFGSOptimizer_Top(float *ix, float *iy, int DataNum);
+	void BFGSOptimize(float *ix, float *iy, int DataNum);
 
 	// set parameters value range constrains
 	void SetParaConstrain(float *iX0_L, float iX0_U, int iConstrainType);
@@ -117,7 +117,7 @@ private:
 };
 
 template <int ParaNum, int IterateNum, int IterateNum_bs>
-void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::BFGSOptimizer_Top(float *ix, float *iy, int DataNum)
+void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::BFGSOptimize(float *ix, float *iy, int DataNum)
 {
 	int rcnt;
 	// initial guess
