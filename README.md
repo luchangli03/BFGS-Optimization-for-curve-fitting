@@ -5,6 +5,12 @@ I also uploaded a code file to verify these codes.
 
 the codes are very simple to use, just as shown below
 
+#include <iostream>
+using namespace std;
+
+#include "CurveFitting.h"
+
+
 int main()
 {
 
@@ -24,7 +30,7 @@ int main()
 		ix[cnt] = cnt;
 	}
 
-	ExpCurveFit.BFGSOptimizer_Top(ix, iy, DatLen);
+	ExpCurveFit.BFGSOptimize(ix, iy, DatLen);
 	ExpCurveFit.PrintfFitPara("final");
 
 
@@ -39,10 +45,9 @@ int main()
 		ix1[cnt] = cnt;
 	}
 
-	GausCurveFit.BFGSOptimizer_Top(ix1, iy1, DatLen);
+	GausCurveFit.BFGSOptimize(ix1, iy1, DatLen);
 
 	GausCurveFit.PrintfFitPara("final");
 
 	return 0;
 }
-
