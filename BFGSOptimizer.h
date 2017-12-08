@@ -7,8 +7,6 @@
 
 #pragma once
 
-#include <iostream>
-using namespace std;
 
 #include <math.h>
 
@@ -52,7 +50,7 @@ private :
 	float Para_U[ParaNum];
 	int ConstrainType; // 0x01|0x02
 
-	// function pointer to get user writen function
+	// function pointer to get users'  function  for specific curve fitting
 	void(*pPreFitting)(float *FitPara, IType *ix, IType *iy, int DataNum);
 	float(*pTargerF)(float *FitPara, IType *ix, IType *iy, int DataNum);
 
@@ -60,6 +58,9 @@ private :
 
 public:
 
+	// function pointer to get users'  function  for specific curve fitting
+	// if ipPreFitting is NULL, then you must pre set FitPara manually after the class is created
+	// ipTargerF must not be NULL
 	BFGSOptimizer(void(*ipPreFitting)(float *FitPara, IType *ix, IType *iy, int DataNum), float(*ipTargerF)(float *FitPara, IType *ix, IType *iy, int DataNum))
 	{
 		int cnt;
@@ -71,6 +72,7 @@ public:
 		for (cnt = 0; cnt < ParaNum; cnt++)
 		{
 			ScalingCoeff[cnt] = 1.0f; // without scaling
+			FitPara[0] = 0.0f;
 		}
 	}
 
@@ -115,14 +117,25 @@ private:
 
 };
 
+
+
 template <class IType, int ParaNum, int IterateNum, int IterateNum_bs>
 void BFGSOptimizer<IType, ParaNum, IterateNum, IterateNum_bs>::BFGSOptimize(IType *ix, IType *iy, int DataNum)
 {
 	int rcnt;
 	// initial guess
-	PreFitting(FitPara, ix, iy, DataNum);
 
-	PrintfFitPara("initial");
+	if (pPreFitting != NULL)
+	{
+		PreFitting(FitPara, ix, iy, DataNum);
+
+	}
+	else
+	{
+//		printf("null pre fit");
+	}
+
+//	PrintfFitPara("initial");
 
 
 	GetScalingCoeff(FitPara, ScalingCoeff);
