@@ -18,6 +18,7 @@ using namespace std;
 
 
 /*
+IType: type of input data for optimize
 ParaNum: number of optimize parameter
 
 IterateNum: total iteration number
@@ -33,7 +34,7 @@ IterateNum_bs: bisection iteration to find best walk length
 
 */
 
-template <int ParaNum, int IterateNum, int IterateNum_bs> class BFGSOptimizer
+template <class IType, int ParaNum, int IterateNum, int IterateNum_bs> class BFGSOptimizer
 {
 public:
 
@@ -47,19 +48,19 @@ private :
 	float sk[ParaNum]; // bfgs quasi-newton method
 	float yk[ParaNum];
 
-	float x0_L[ParaNum];
-	float x0_U[ParaNum];
+	float Para_L[ParaNum];
+	float Para_U[ParaNum];
 	int ConstrainType; // 0x01|0x02
 
 	// function pointer to get user writen function
-	void(*pPreFitting)(float *FitPara, float *ix, float *iy, int DataNum);
-	float(*pTargerF)(float *FitPara, float *ix, float *iy, int DataNum);
+	void(*pPreFitting)(float *FitPara, IType *ix, IType *iy, int DataNum);
+	float(*pTargerF)(float *FitPara, IType *ix, IType *iy, int DataNum);
 
 	float ScalingCoeff[ParaNum];
 
 public:
 
-	BFGSOptimizer(void(*ipPreFitting)(float *FitPara, float *ix, float *iy, int DataNum), float(*ipTargerF)(float *FitPara, float *ix, float *iy, int DataNum))
+	BFGSOptimizer(void(*ipPreFitting)(float *FitPara, IType *ix, IType *iy, int DataNum), float(*ipTargerF)(float *FitPara, IType *ix, IType *iy, int DataNum))
 	{
 		int cnt;
 
@@ -73,10 +74,10 @@ public:
 		}
 	}
 
-	void BFGSOptimize(float *ix, float *iy, int DataNum);
+	void BFGSOptimize(IType *ix, IType *iy, int DataNum);
 
 	// set parameters value range constrains
-	void SetParaConstrain(float *iX0_L, float iX0_U, int iConstrainType);
+	void SetParaConstrain(float *iPara_L, float iPara_U, int iConstrainType);
 
 	void PrintfFitPara(char *pstr)
 	{
@@ -90,20 +91,18 @@ public:
 	}
 
 private:
-	void PreFitting(float *FitPara, float *ix, float *iy, int DataNum);
-	float TargerFunction(float *FitPara, float *ix, float *iy, int DataNum);
 
+	void BFGSOptimizer_Core(IType *ix, IType *iy, int DataNum);
 
-	void BFGSOptimizer_Core(float *ix, float *iy, int DataNum);
+	void PreFitting(float *FitPara, IType *ix, IType *iy, int DataNum);
+	float TargerFunction(float *FitPara, IType *ix, IType *iy, int DataNum);
+	void GradientCalc(float *FitPara, float *grad, IType *ix, IType *iy, int DataNum);
+
 
 	// scaling can enlarge parameters' range
 	void GetScalingCoeff(float *iFitPara, float *ScalingCoeff);
 	void ApplyScalingCoeff(float *iFitPara, float *ScalingCoeff);
 	void ApplyRScalingCoeff(float *iFitPara, float *ScalingCoeff);
-
-
-
-	void GradientCalc(float *FitPara, float *grad, float *ix, float *iy, int DataNum);
 
 
 	void D0Init(float *D0);
@@ -116,8 +115,8 @@ private:
 
 };
 
-template <int ParaNum, int IterateNum, int IterateNum_bs>
-void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::BFGSOptimize(float *ix, float *iy, int DataNum)
+template <class IType, int ParaNum, int IterateNum, int IterateNum_bs>
+void BFGSOptimizer<IType, ParaNum, IterateNum, IterateNum_bs>::BFGSOptimize(IType *ix, IType *iy, int DataNum)
 {
 	int rcnt;
 	// initial guess
@@ -150,8 +149,8 @@ void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::BFGSOptimize(float *ix, 
 
 }
 
-template <int ParaNum, int IterateNum, int IterateNum_bs>
-void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::BFGSOptimizer_Core(float *ix, float *iy, int DataNum)
+template <class IType, int ParaNum, int IterateNum, int IterateNum_bs>
+void BFGSOptimizer<IType, ParaNum, IterateNum, IterateNum_bs>::BFGSOptimizer_Core(IType *ix, IType *iy, int DataNum)
 {
 	// adjust d0
 	float td0_total;
@@ -253,16 +252,16 @@ void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::BFGSOptimizer_Core(float
 }
 
 
-template <int ParaNum, int IterateNum, int IterateNum_bs>
-void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::PreFitting(float *FitPara, float *ix, float *iy, int DataNum)
+template <class IType, int ParaNum, int IterateNum, int IterateNum_bs>
+void BFGSOptimizer<IType, ParaNum, IterateNum, IterateNum_bs>::PreFitting(float *FitPara, IType *ix, IType *iy, int DataNum)
 {
 
 	pPreFitting(FitPara, ix, iy, DataNum);
 
 }
 
-template <int ParaNum, int IterateNum, int IterateNum_bs>
-float BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::TargerFunction(float *FitPara, float *ix, float *iy, int DataNum)
+template <class IType, int ParaNum, int IterateNum, int IterateNum_bs>
+float BFGSOptimizer<IType, ParaNum, IterateNum, IterateNum_bs>::TargerFunction(float *FitPara, IType *ix, IType *iy, int DataNum)
 {
 	float tFitPara[ParaNum];
 	memcpy(tFitPara, FitPara, ParaNum*sizeof(float));
@@ -272,8 +271,8 @@ float BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::TargerFunction(float *F
 	return pTargerF(tFitPara, ix, iy, DataNum);
 }
 
-template <int ParaNum, int IterateNum, int IterateNum_bs>
-void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::GetScalingCoeff(float *iFitPara, float *ScalingCoeff)
+template <class IType, int ParaNum, int IterateNum, int IterateNum_bs>
+void BFGSOptimizer<IType, ParaNum, IterateNum, IterateNum_bs>::GetScalingCoeff(float *iFitPara, float *ScalingCoeff)
 {
 	int cnt = 0;
 	for (cnt = 0; cnt < ParaNum; cnt++)
@@ -282,8 +281,8 @@ void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::GetScalingCoeff(float *i
 	}
 }
 
-template <int ParaNum, int IterateNum, int IterateNum_bs>
-void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::ApplyScalingCoeff(float *iFitPara, float *ScalingCoeff)
+template <class IType, int ParaNum, int IterateNum, int IterateNum_bs>
+void BFGSOptimizer<IType, ParaNum, IterateNum, IterateNum_bs>::ApplyScalingCoeff(float *iFitPara, float *ScalingCoeff)
 {
 	int cnt = 0;
 	for (cnt = 0; cnt < ParaNum; cnt++)
@@ -292,8 +291,8 @@ void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::ApplyScalingCoeff(float 
 	}
 }
 
-template <int ParaNum, int IterateNum, int IterateNum_bs>
-void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::ApplyRScalingCoeff(float *iFitPara, float *ScalingCoeff)
+template <class IType, int ParaNum, int IterateNum, int IterateNum_bs>
+void BFGSOptimizer<IType, ParaNum, IterateNum, IterateNum_bs>::ApplyRScalingCoeff(float *iFitPara, float *ScalingCoeff)
 {
 	int cnt = 0;
 	for (cnt = 0; cnt < ParaNum; cnt++)
@@ -303,8 +302,8 @@ void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::ApplyRScalingCoeff(float
 }
 
 
-template <int ParaNum, int IterateNum, int IterateNum_bs>
-void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::GradientCalc(float *FitPara, float *grad, float *ix, float *iy, int DataNum)
+template <class IType, int ParaNum, int IterateNum, int IterateNum_bs>
+void BFGSOptimizer<IType, ParaNum, IterateNum, IterateNum_bs>::GradientCalc(float *FitPara, float *grad, IType *ix, IType *iy, int DataNum)
 {
 	float tx0[ParaNum];
 	float tgradn;
@@ -330,8 +329,8 @@ void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::GradientCalc(float *FitP
 	}
 }
 
-template <int ParaNum, int IterateNum, int IterateNum_bs>
-void  BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::D0Init(float *D0)
+template <class IType, int ParaNum, int IterateNum, int IterateNum_bs>
+void  BFGSOptimizer<IType, ParaNum, IterateNum, IterateNum_bs>::D0Init(float *D0)
 {
 	float(*pD0)[ParaNum] = (float(*)[ParaNum])&D0[0];
 
@@ -346,8 +345,8 @@ void  BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::D0Init(float *D0)
 }
 
 
-template <int ParaNum, int IterateNum, int IterateNum_bs>
-void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::UpdatePara(float *oX0, float *iX0, float *d0, float coeff)
+template <class IType, int ParaNum, int IterateNum, int IterateNum_bs>
+void BFGSOptimizer<IType, ParaNum, IterateNum, IterateNum_bs>::UpdatePara(float *oX0, float *iX0, float *d0, float coeff)
 {
 	int cnt = 0;
 	// oX0=d0*coeff + iX0;
@@ -358,27 +357,27 @@ void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::UpdatePara(float *oX0, f
 }
 
 
-template <int ParaNum, int IterateNum, int IterateNum_bs>
-void  BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::SetParaConstrain(float *iX0_L, float iX0_U, int iConstrainType)
+template <class IType, int ParaNum, int IterateNum, int IterateNum_bs>
+void  BFGSOptimizer<IType, ParaNum, IterateNum, IterateNum_bs>::SetParaConstrain(float *iPara_L, float iPara_U, int iConstrainType)
 {
 	ConstrainType = iConstrainType;
 
 	// constrain their lower limit
 	if (ConstrainType & 0x01)
 	{
-		memcpy(x0_L, iX0_L, ParaNum);
+		memcpy(Para_L, iPara_L, ParaNum);
 	}
 
 	// constrain their upper limit
 	if (ConstrainType & 0x02)
 	{
-		memcpy(x0_U, iX0_U, ParaNum);
+		memcpy(Para_U, iPara_U, ParaNum);
 	}
 }
 
 
-template <int ParaNum, int IterateNum, int IterateNum_bs>
-void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::ConstrainPara()
+template <class IType, int ParaNum, int IterateNum, int IterateNum_bs>
+void BFGSOptimizer<IType, ParaNum, IterateNum, IterateNum_bs>::ConstrainPara()
 {
 	int cnt = 0;
 
@@ -387,7 +386,7 @@ void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::ConstrainPara()
 	{
 		for (cnt = 0; cnt < ParaNum; cnt++)
 		{
-			FitPara[cnt] = Max(FitPara[cnt], x0_L[cnt] / ScalingCoeff[cnt]);
+			FitPara[cnt] = Max(FitPara[cnt], Para_L[cnt] / ScalingCoeff[cnt]);
 		}
 	}
 
@@ -396,14 +395,14 @@ void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::ConstrainPara()
 	{
 		for (cnt = 0; cnt < ParaNum; cnt++)
 		{
-			FitPara[cnt] = Min(FitPara[cnt], x0_U[cnt] / ScalingCoeff[cnt]);
+			FitPara[cnt] = Min(FitPara[cnt], Para_U[cnt] / ScalingCoeff[cnt]);
 		}
 	}
 }
 
 
-template <int ParaNum, int IterateNum, int IterateNum_bs>
-void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::UpdateInvHessian(float *D0, float *sk, float *yk)
+template <class IType, int ParaNum, int IterateNum, int IterateNum_bs>
+void BFGSOptimizer<IType, ParaNum, IterateNum, IterateNum_bs>::UpdateInvHessian(float *D0, float *sk, float *yk)
 {
 	float divdat;
 	float skyk[ParaNum*ParaNum]; //  I-(sk*yk')/(yk'*sk)
@@ -442,10 +441,10 @@ void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::UpdateInvHessian(float *
 	}
 
 
-	for (row = 0; row<ParaNum; row++)
+	for (row = 0; row < ParaNum; row++)
 	{
 
-		for (col = 0; col<ParaNum; col++)
+		for (col = 0; col < ParaNum; col++)
 		{
 			// I-(sk*yk')/(yk'*sk)
 			if (row == col) pskyk[row][col] = 1.0f - sk[row] * tdat10[col];
@@ -457,10 +456,10 @@ void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::UpdateInvHessian(float *
 	}
 	// 
 
-	for (row = 0; row<ParaNum; row++)
+	for (row = 0; row < ParaNum; row++)
 	{
 
-		for (col = 0; col<ParaNum; col++)
+		for (col = 0; col < ParaNum; col++)
 		{
 			// tD0 = skyk*D0
 			ptD0[row][col] = 0;
@@ -473,10 +472,10 @@ void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::UpdateInvHessian(float *
 	}
 
 
-	for (row = 0; row<ParaNum; row++)
+	for (row = 0; row < ParaNum; row++)
 	{
 
-		for (col = 0; col<ParaNum; col++)
+		for (col = 0; col < ParaNum; col++)
 		{
 			// D0 = D0*yksk
 			pD0[row][col] = 0;
@@ -489,7 +488,7 @@ void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::UpdateInvHessian(float *
 	}
 	// D0=D0+sksk;
 
-	for (row = 0; row<ParaNum; row++)
+	for (row = 0; row < ParaNum; row++)
 	{
 
 		for (cnt = 0; cnt < ParaNum; cnt++)
@@ -500,8 +499,8 @@ void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::UpdateInvHessian(float *
 }
 
 
-template <int ParaNum, int IterateNum, int IterateNum_bs>
-void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::MatMultiplyVector(float *D0, float *grad, float* d0)
+template <class IType, int ParaNum, int IterateNum, int IterateNum_bs>
+void BFGSOptimizer<IType, ParaNum, IterateNum, IterateNum_bs>::MatMultiplyVector(float *D0, float *grad, float* d0)
 {
 	// d0=-D0*grad;    %search direction
 
@@ -511,7 +510,7 @@ void BFGSOptimizer<ParaNum, IterateNum, IterateNum_bs>::MatMultiplyVector(float 
 	float(*pD0)[ParaNum] = (float(*)[ParaNum])&D0[0];
 
 
-	for (row = 0; row<ParaNum; row++)
+	for (row = 0; row < ParaNum; row++)
 	{
 		d0[row] = 0;
 
