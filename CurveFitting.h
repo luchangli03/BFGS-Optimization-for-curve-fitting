@@ -12,7 +12,7 @@
 // void xx_PreFitting(float *FitPara, float *ix, float *iy, int DataNum);
 // optimization target function
 // float xx_TargerF(float *FitPara, float *ix, float *iy, int DataNum);
-// x can be time,count or just NULL, depend on how you 
+// x can be time,count or just NULL, depend on how you define them
 
 
 
