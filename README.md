@@ -13,41 +13,21 @@ using namespace std;
 
 int main()
 {
+#define DataLen	10
+float x[DataLen] = { 0,1,2,3,4,5,6,7,8,9 };
+float y[DataLen] = { 0.601981941401637,1.26297128454014,2.65407909847678,3.68921450314001,4.74815159282371,5.45054159850250,6.08382137799693,7.22897696871682,8.91333736150167,9.15237801896922 };
 
-#define DatLen   15
+#define DataArrayNum		2
 
-	// ParaNum, ItNum, ItNum_bs; 
-	BFGSOptimizer< float, 2, 4, 11> ExpCurveFit(ExpFit_PreFitting, ExpFit_TargerF);
-
-	float ix[DatLen];
-	float iy[DatLen] = { 0.561983237858735, 0.274092050681491, 0.0936873888873212, 0.0357818099726275, 0.0158309111945142, 0.00702655416654909, 0.00437395942094421, 0.00214465107091458, 0.00146739283799419, 0.000649039139882044, 0.000705477325958744, 0.000649039139882044, 0.000225752744306798, 0.000310410023421847, 0.000169314558230098 };
-
-	int cnt;
+float *DataArray[DataArrayNum] = { x,y };
 
 
-	for (cnt = 0; cnt < DatLen; cnt++)
-	{
-		ix[cnt] = cnt;
-	}
+BFGSOptimizer_TypeDef< float, DataArrayNum, 2, 5, 11>BFGSOptimizer(LineOrder1_PreFitting, LineOrder1_TargerF);
 
-	ExpCurveFit.BFGSOptimize(ix, iy, DatLen);
-	ExpCurveFit.PrintfFitPara("final");
+BFGSOptimizer.BFGSOptimize(DataArray, DataLen);
 
+BFGSOptimizer.PrintfFitPara();
 
-
-
-	float ix1[DatLen];
-	float iy1[DatLen] = { 1.03787663582584, 1.83038049957306, 2.97498249283382, 4.45630428499173, 6.15194791898853, 7.82704538241868, 9.17762784414991, 9.91768757606545, 9.87728971930251, 9.06593396336589, 7.66892868588658, 5.97866523316379, 4.29557358210739, 2.84436599826735, 1.73579000492169 };
-
-	for (cnt = 0; cnt < DatLen; cnt++)
-	{
-		ix1[cnt] = cnt;
-	}
-	BFGSOptimizer< float, 3, 6, 11> GausCurveFit(GausFit10_PreFitting, GausFit10_TargerF);
-	GausCurveFit.BFGSOptimize(ix1, iy1, DatLen);
-
-
-	GausCurveFit.PrintfFitPara("final");
-
-	return 0;
+return 0;
 }
+
