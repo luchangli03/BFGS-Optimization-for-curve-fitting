@@ -5,40 +5,26 @@
 @ free use for research
 */
 
+#include <iostream>
+using namespace std;
 
 #include "BFGSOptimizer.h"
 
-// initial guess function for optimization/ curve fitting,DataNum is the array length
+// initial guess function for optimization/ curve fitting
 // void xx_PreFitting(float *FitPara, float *ix, float *iy, int DataNum);
 // optimization target function
 // float xx_TargerF(float *FitPara, float *ix, float *iy, int DataNum);
-// x can be time,count or just NULL, depend on how you define them
 
-
+void ZPlaneFit_PreFitting(float *FitPara, float *DataArrayList[3], int DataNum);
+float ZPlaneFit_TargerF(float *FitPara, float *DataArrayList[3], int DataNum);
 
 /*
-exp fitting
-y=a*exp(b*x)
-FitPara=[a,b]
+Line order 1 fitting
+y=a*x+b
 
 */
 
-void ExpFit_PreFitting(float *FitPara, float *ix, float *iy, int DataNum);
-float ExpFit_TargerF(float *FitPara, float *ix, float *iy, int DataNum);
+void LineOrder1_PreFitting(float *FitPara, float *DataArrayList[2], int DataNum);
 
-/*
-Gaussian Fitting 1 0
-Y=a*exp(-(x-x0)^2/(2*sigma^2))
-FitPara=[A,x0,sigma]
-*/
+float LineOrder1_TargerF(float *FitPara, float *DataArrayList[2], int DataNum);
 
-void GausFit10_PreFitting(float *FitPara, float *ix, float *iy, int DataNum);
-float GausFit10_TargerF(float *FitPara, float *ix, float *iy, int DataNum);
-
-/*
-Gaussian Fitting 1 1
-Y=a*exp(-(x-x0)^2/(2*sigma^2))+b
-FitPara=[A,x0,sigma,b]
-*/
-void GausFit11_PreFitting(float *FitPara, float *ix, float *iy, int DataNum);
-float GausFit11_TargerF(float *FitPara, float *ix, float *iy, int DataNum);

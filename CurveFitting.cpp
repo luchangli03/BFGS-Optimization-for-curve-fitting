@@ -7,22 +7,71 @@
 
 #include "CurveFitting.h"
 
-/*
-exp fitting 
-y=a*exp(b*x)
-FitPara=[a,b]
 
-*/
-
-void ExpFit_PreFitting(float *FitPara, float *ix, float *iy, int DataNum)
+void ZPlaneFit_PreFitting(float *FitPara, float *DataArrayList[3], int DataNum)
 {
-	FitPara[0] = iy[0];
-	FitPara[1] = logf(iy[1] / iy[0]);
+	float *ix = DataArrayList[0];
+	float *iy = DataArrayList[1];
+	float *iz = DataArrayList[2];
+
+
+	FitPara[0] = 1; // a
+	FitPara[1] = 1;
+	FitPara[2] = -100;
+
+	printf("prefit:%f %f %f\n", FitPara[0], FitPara[1], FitPara[2]);
+}
+
+float ZPlaneFit_TargerF(float *FitPara, float *DataArrayList[3], int DataNum)
+{
+	float *ix = DataArrayList[0];
+	float *iy = DataArrayList[1];
+	float *iz = DataArrayList[2];
+
+
+	float kx = FitPara[0];
+	float ky = FitPara[1];
+	float b0 = FitPara[2];
+
+
+	int cnt = 0;
+	float SquareError = 0;
+
+	for (cnt = 0; cnt < DataNum; cnt++)
+	{
+		float zdiff = iz[cnt] - (kx * ix[cnt] + ky * iy[cnt] + b0);
+
+		SquareError += powf(zdiff, 2);
+	}
+
+	return SquareError;
+
 
 }
 
-float ExpFit_TargerF(float *FitPara, float *ix, float *iy, int DataNum)
+/*
+Line order 1 fitting
+y=a*x+b
+
+*/
+
+void LineOrder1_PreFitting(float *FitPara, float *DataArrayList[2], int DataNum)
 {
+	float *ix = DataArrayList[0];
+	float *iy = DataArrayList[1];
+
+
+	FitPara[0] = (iy[DataNum - 1] - iy[0]) / (ix[DataNum - 1] - ix[0]); // a
+	FitPara[1] = iy[0] - ix[0] * FitPara[0];
+
+	printf("prefit:%f %f\n", FitPara[0], FitPara[1]);
+}
+
+float LineOrder1_TargerF(float *FitPara, float *DataArrayList[2], int DataNum)
+{
+	float *ix = DataArrayList[0];
+	float *iy = DataArrayList[1];
+
 
 	float a = FitPara[0];
 	float b = FitPara[1];
@@ -34,55 +83,7 @@ float ExpFit_TargerF(float *FitPara, float *ix, float *iy, int DataNum)
 
 	for (cnt = 0; cnt < DataNum; cnt++)
 	{
-		y0 = a*expf(b*ix[cnt]);
-
-		SquareError += powf(y0 - iy[cnt], 2);
-	}
-
-	return SquareError;
-
-}
-
-/*
-Gaussian Fitting 1 0
-Y=a*exp(-(x-x0)^2/(2*sigma^2))
-FitPara=[A,x0,sigma]
-*/
-
-
-void GausFit10_PreFitting(float *FitPara, float *ix, float *iy, int DataNum)
-{
-	float mdat = iy[0];
-	float mpos = 0;
-
-	int cnt = 0;
-	for (cnt = 0; cnt < DataNum; cnt++)
-	{
-		if (mdat < iy[cnt])
-		{
-			mdat = iy[cnt];
-			mpos = cnt;
-		}
-	}
-	FitPara[0] = mdat;
-	FitPara[1] = mpos;
-	FitPara[2] = mpos / 2.5f;
-
-}
-
-float GausFit10_TargerF(float *FitPara, float *ix, float *iy, int DataNum)
-{
-	float a = FitPara[0];
-	float x0 = FitPara[1];
-	float sigma = FitPara[2];
-	float y0;
-
-	int cnt = 0;
-	float SquareError = 0;
-
-	for (cnt = 0; cnt < DataNum; cnt++)
-	{
-		y0 = a*expf(-(ix[cnt] - x0)*(ix[cnt] - x0) / (2 * sigma*sigma));
+		y0 = a*ix[cnt] + b;
 
 		SquareError += powf(y0 - iy[cnt], 2);
 	}
@@ -91,62 +92,4 @@ float GausFit10_TargerF(float *FitPara, float *ix, float *iy, int DataNum)
 
 
 }
-
-
-/*
-Gaussian Fitting 1 1
-Y=a*exp(-(x-x0)^2/(2*sigma^2))+b
-FitPara=[A,x0,sigma,b]
-*/
-
-
-void GausFit11_PreFitting(float *FitPara, float *ix, float *iy, int DataNum)
-{
-	float mdat = iy[0];
-	float mpos = 0;
-
-	int cnt = 0;
-
-	for (cnt = 0; cnt < DataNum; cnt++)
-	{
-		if (mdat < iy[cnt])
-		{
-			mdat = iy[cnt];
-			mpos = cnt;
-		}
-	}
-
-	float b = Min(iy[0], iy[DataNum - 1]);
-
-	FitPara[0] = mdat - b;
-	FitPara[1] = mpos;
-	FitPara[2] = mpos / 2.5f;
-	FitPara[3] = b;
-
-}
-
-float GausFit11_TargerF(float *FitPara, float *ix, float *iy, int DataNum)
-{
-	float a = FitPara[0];
-	float x0 = FitPara[1];
-	float sigma = FitPara[2];
-	float b = FitPara[3];
-
-	float y0;
-
-	int cnt = 0;
-	float SquareError = 0;
-
-	for (cnt = 0; cnt < DataNum; cnt++)
-	{
-		y0 = a*expf(-(ix[cnt] - x0)*(ix[cnt] - x0) / (2 * sigma*sigma)) + b;
-
-		SquareError += powf(y0 - iy[cnt], 2);
-	}
-
-	return SquareError;
-
-
-}
-
 
